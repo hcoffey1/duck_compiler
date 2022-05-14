@@ -25,17 +25,14 @@ fn main() {
     let parse_results = parse::parse_file(&mut reader);
 
     println!("There are {} duck(s).", parse_results.0);
-    for inst in parse_results.1
-    {
-        match inst.arg_c
-        {
+    for inst in parse_results.1 {
+        match inst.arg_c {
             0 => println!("{}:", inst.op_code),
             1 => println!("{}: {}", inst.op_code, inst.n),
             2 => println!("{}: {},{}", inst.op_code, inst.n, inst.y),
             _ => panic!("Invalid argument size!"),
         }
     }
-
 }
 
 //x if x == Instruction::End as usize => println!("End"),
