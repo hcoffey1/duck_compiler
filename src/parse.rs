@@ -25,6 +25,24 @@ pub struct DuckInstruction {
     pub arg_c: usize,
 }
 
+pub fn get_op_name(op_code: usize) -> String {
+    match op_code {
+        x if x == InstructionEnum::End as usize => String::from("End"),
+        x if x == InstructionEnum::Print as usize => String::from("Print"),
+        x if x == InstructionEnum::Add as usize => String::from("Add"),
+        x if x == InstructionEnum::Subtract as usize => String::from("Subtract"),
+        x if x == InstructionEnum::Multiply as usize => String::from("Multiply"),
+        x if x == InstructionEnum::Divide as usize => String::from("Divide"),
+        x if x == InstructionEnum::Input as usize => String::from("Input"),
+        x if x == InstructionEnum::Push as usize => String::from("Push"),
+        x if x == InstructionEnum::Pop as usize => String::from("Pop"),
+        x if x == InstructionEnum::LoopBegin as usize => String::from("LoopBegin"),
+        x if x == InstructionEnum::LoopEnd as usize => String::from("LoopEnd"),
+        x if x == InstructionEnum::Set as usize => String::from("Set"),
+        x => panic!("Unhandled instruction code {}", x),
+    }
+}
+
 fn get_counts(line: &str) -> (usize, usize) {
     let c_pos = line.find('#');
 

@@ -26,25 +26,12 @@ fn main() {
 
     println!("There are {} duck(s).", parse_results.0);
     for inst in parse_results.1 {
+        let inst_name = parse::get_op_name(inst.op_code);
         match inst.arg_c {
-            0 => println!("{}:", inst.op_code),
-            1 => println!("{}: {}", inst.op_code, inst.n),
-            2 => println!("{}: {},{}", inst.op_code, inst.n, inst.y),
+            0 => println!("{}:", inst_name),
+            1 => println!("{}: {}", inst_name, inst.n),
+            2 => println!("{}: {},{}", inst_name, inst.n, inst.y),
             _ => panic!("Invalid argument size!"),
         }
     }
 }
-
-//x if x == Instruction::End as usize => println!("End"),
-//x if x == Instruction::Print as usize => println!("Print {}", op1.unwrap()),
-//x if x == Instruction::Add as usize => println!("Add {} {}", op1.unwrap(), op2.unwrap()),
-//x if x == Instruction::Subtract as usize => println!("Subtract"),
-//x if x == Instruction::Multiply as usize => println!("Multiply"),
-//x if x == Instruction::Divide as usize => println!("Divide"),
-//x if x == Instruction::Input as usize => println!("Input"),
-//x if x == Instruction::Push as usize => println!("Push"),
-//x if x == Instruction::Pop as usize => println!("Pop"),
-//x if x == Instruction::LoopBegin as usize => println!("LoopBegin"),
-//x if x == Instruction::LoopEnd as usize => println!("LoopEnd"),
-//x if x == Instruction::Set as usize => println!("Set"),
-//x => panic!("Unhandled instruction code {}", x),
