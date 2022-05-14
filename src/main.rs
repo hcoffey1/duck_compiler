@@ -4,7 +4,7 @@ use std::fs::File;
 use std::io::BufReader;
 use std::path::Path;
 
-mod parse;
+use duck_compiler::parse;
 
 fn main() {
     //Get input file path
