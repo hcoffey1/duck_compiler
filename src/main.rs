@@ -27,7 +27,13 @@ fn main() {
     println!("There are {} duck(s).", parse_results.0);
     for inst in parse_results.1
     {
-        println!("{}: {},{}", inst.op_code, inst.n, inst.y);
+        match inst.arg_c
+        {
+            0 => println!("{}:", inst.op_code),
+            1 => println!("{}: {}", inst.op_code, inst.n),
+            2 => println!("{}: {},{}", inst.op_code, inst.n, inst.y),
+            _ => panic!("Invalid argument size!"),
+        }
     }
 
 }
