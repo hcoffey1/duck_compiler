@@ -164,9 +164,9 @@ fn apply_goose_updates(
     for inst_pos in 0..inst_list.len() {
         //Determine rotation amount
         if inst_list[inst_pos].op_code != InstructionEnum::Print as usize
-            || inst_list[inst_pos].op_code != InstructionEnum::End as usize
-            || inst_list[inst_pos].op_code != InstructionEnum::LoopBegin as usize
-            || inst_list[inst_pos].op_code != InstructionEnum::LoopEnd as usize
+            && inst_list[inst_pos].op_code != InstructionEnum::End as usize
+            && inst_list[inst_pos].op_code != InstructionEnum::LoopBegin as usize
+            && inst_list[inst_pos].op_code != InstructionEnum::LoopEnd as usize
         {
             duck_mapping.rotate_right(inst_list[inst_pos].n);
         } else {
@@ -188,6 +188,10 @@ fn apply_goose_updates(
                 rotated_inst_list[i].n = duck_mapping
                     .iter()
                     .position(|&r| r == inst_list[i].n)
+                    .unwrap();
+                rotated_inst_list[i].goose = duck_mapping
+                    .iter()
+                    .position(|&r| r == inst_list[i].goose)
                     .unwrap();
             } else if arg_c == 1 {
                 rotated_inst_list[i].n = duck_mapping
