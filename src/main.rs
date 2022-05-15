@@ -6,7 +6,7 @@ use std::io::{Error, ErrorKind};
 use std::path::Path;
 use std::process::Command;
 
-use duck_compiler::{parse, x86_64_gen};
+use gdd::{parse, x86_64_gen};
 
 fn get_file_name(path: &str) -> &str {
     let pos_end = path.find(".ddg").unwrap();

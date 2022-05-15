@@ -1,3 +1,4 @@
+//Hayden Coffey
 pub enum InstructionEnum {
     End,
     Print,
@@ -19,5 +20,5 @@ pub struct DuckInstruction {
     pub n: usize,
     pub y: usize,
     pub arg_c: usize,
-	pub goose: usize,
+    pub goose: usize,
 }
