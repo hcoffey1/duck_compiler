@@ -3,31 +3,17 @@ use std::io::prelude::*;
 
 use crate::instruction::{DuckInstruction, InstructionEnum};
 
-//Not using rsp, rdx, rsi, as a variable
-//static REGISTER_MAP: [&str; 13] = [
-//    "rax", "rbx", "rcx", "rdi", "rbp", "r8", "r9", "r10", "r11", "r12", "r13",
-//    "r14", "r15",
-//];
-
-static REGISTER_MAP: [&str; 4] = [
-    "r12", "r13",
+//Not using rsp, rdx, rax, as a variable
+static REGISTER_MAP: [&str; 13] = [
+    "rbx", "rcx", "rsi", "rdi", "rbp", "r8", "r9", "r10", "r11", "r12", "r13",
     "r14", "r15",
 ];
-//.section .text
-//.global main
-//main:
-//mov $0, %rax
-
-//Exit
-//mov $60, %rax
-//mov $0, %rdi
-//syscall
 
 fn write_header(duck_count: usize, file: &mut File) -> std::io::Result<()> {
     write!(file, ".section .text\n.global main\nmain:\n")?;
 
-    //Add registers for goose and teacher (TODO: increase to +2 for teacher register)
-    for i in 0..duck_count + 1 {
+    //Add registers for goose and teacher 
+    for i in 0..duck_count + 2 {
         write!(file, "  mov $0, %{}\n", REGISTER_MAP[i])?;
     }
 
@@ -178,11 +164,16 @@ fn write_set(inst: &DuckInstruction, file: &mut File) -> std::io::Result<()> {
 //syscall   
 //add     $8, %rsp    # restore sp 
 fn write_print(inst: &DuckInstruction, file: &mut File) -> std::io::Result<()> {
-	writeln!(file, "#Print")?;
-	writeln!(file, "  push %rax")?;
+	writeln!(file, "#Print==========")?;
+	writeln!(file, "  push %rcx")?;
+	writeln!(file, "  push %rdx")?;
 	writeln!(file, "  push %rdi")?;
 	writeln!(file, "  push %rsi")?;
-	writeln!(file, "  push %rdx")?;
+	writeln!(file, "  push %rsp")?;
+	writeln!(file, "  push %r8")?;
+	writeln!(file, "  push %r9")?;
+	writeln!(file, "  push %r10")?;
+	writeln!(file, "  push %r11")?;
 
 	writeln!(file, "  push %{}", REGISTER_MAP[inst.n])?;
 	writeln!(file, "  mov $1, %rax")?;
@@ -192,10 +183,15 @@ fn write_print(inst: &DuckInstruction, file: &mut File) -> std::io::Result<()> {
 	writeln!(file, "  syscall")?;
 	writeln!(file, "  add $8, %rsp")?;
 
-	writeln!(file, "  pop %rdx")?;
+	writeln!(file, "  pop %r11")?;
+	writeln!(file, "  pop %r10")?;
+	writeln!(file, "  pop %r9")?;
+	writeln!(file, "  pop %r8")?;
+	writeln!(file, "  pop %rsp")?;
 	writeln!(file, "  pop %rsi")?;
 	writeln!(file, "  pop %rdi")?;
-	writeln!(file, "  pop %rax")?;
+	writeln!(file, "  pop %rdx")?;
+	writeln!(file, "  pop %rcx")?;
     Ok(())
 }
 
