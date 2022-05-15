@@ -4,7 +4,7 @@
 
 A compiler for the esoteric programming language 
 [Duck Duck Goose](https://esolangs.org/wiki/Duck_Duck_Goose)
-written in Rust. Currently only supports Linux X86-64.
+written in Rust. Currently only supports Linux x86-64.
 
 ## Usage
 
