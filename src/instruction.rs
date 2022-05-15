@@ -19,4 +19,5 @@ pub struct DuckInstruction {
     pub n: usize,
     pub y: usize,
     pub arg_c: usize,
+	pub goose: usize,
 }

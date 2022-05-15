@@ -95,6 +95,7 @@ fn parse_binary_inst(inst: usize, operands: &mut Vec<usize>) -> DuckInstruction 
         n,
         y,
         arg_c: 2,
+        goose: 0,
     }
 }
 
@@ -109,6 +110,7 @@ fn parse_unary_inst(inst: usize, operands: &mut Vec<usize>) -> DuckInstruction {
         n,
         y: 0,
         arg_c: 1,
+        goose: 0,
     }
 }
 
@@ -128,6 +130,7 @@ fn parse_loop_inst(inst: usize, operands: &mut Vec<usize>) -> DuckInstruction {
             n,
             y,
             arg_c: 2,
+            goose: 0,
         }
     } else {
         let n = match operands.pop() {
@@ -139,6 +142,7 @@ fn parse_loop_inst(inst: usize, operands: &mut Vec<usize>) -> DuckInstruction {
             n,
             y: 0,
             arg_c: 2,
+            goose: 0,
         }
     }
 }
@@ -190,6 +194,10 @@ fn apply_goose_updates(
                     .iter()
                     .position(|&r| r == inst_list[i].n)
                     .unwrap();
+                rotated_inst_list[i].goose = duck_mapping
+                    .iter()
+                    .position(|&r| r == inst_list[i].goose)
+                    .unwrap();
             } else if arg_c == 2 {
                 rotated_inst_list[i].n = duck_mapping
                     .iter()
@@ -198,6 +206,10 @@ fn apply_goose_updates(
                 rotated_inst_list[i].y = duck_mapping
                     .iter()
                     .position(|&r| r == inst_list[i].y)
+                    .unwrap();
+                rotated_inst_list[i].goose = duck_mapping
+                    .iter()
+                    .position(|&r| r == inst_list[i].goose)
                     .unwrap();
             }
         }
@@ -251,6 +263,7 @@ pub fn parse_file(reader: &mut BufReader<File>) -> (usize, Vec<DuckInstruction>)
                     n: 0,
                     y: 0,
                     arg_c: 0,
+                    goose: 0,
                 }),
 
                 x => panic!("Unhandled instruction code {}", x),
