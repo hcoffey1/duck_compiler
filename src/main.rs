@@ -56,7 +56,7 @@ fn main() -> Result<(), Error> {
     //Also, this is probably a security vulnerability
     let output_arg = format!("-o{}", file_name_base);
     Command::new("gcc")
-        .args([file_name_asm, output_arg])
+        .args([file_name_asm, String::from("-g"), output_arg])
         .spawn()
         .expect("Failed to assemble program.");
 
