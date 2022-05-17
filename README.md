@@ -23,6 +23,8 @@ This will produce a `helloworld` binary in the current directory.
 
 `./helloworld`
 
+Alternatively, `cargo run ./examples/helloworld.ddg` will do the same thing.
+
 ## Write Up (Thoughts)
 
 This project was mostly an excuse to practice writing Rust
