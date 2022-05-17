@@ -25,7 +25,8 @@ This will produce a `helloworld` binary in the current directory.
 
 ## Write Up (Thoughts)
 
-This project was mostly an excuse to practice writing Rust. 
+This project was mostly an excuse to practice writing Rust
+(also I am not experienced in compiler design).
 The actual Duck Duck Goose (DDG) language is fairly easy
 to parse. Determining operations and operands simply
 involves counting ducks. However, the rotational
