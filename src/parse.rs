@@ -148,7 +148,8 @@ fn parse_loop_inst(inst: usize, operands: &mut Vec<usize>) -> DuckInstruction {
     }
 }
 
-fn apply_goose_updates(
+//Old approach used to statically calculate rotated index positions
+fn _apply_goose_updates(
     duck_count: usize,
     inst_list: &Vec<DuckInstruction>,
 ) -> Vec<DuckInstruction> {
@@ -280,8 +281,6 @@ pub fn parse_file(reader: &mut BufReader<File>) -> (usize, Vec<DuckInstruction>)
     if duck_inst.last().unwrap().op_code != InstructionEnum::End as usize {
         panic!("Program does not end with goose!");
     }
-
-    let duck_inst = apply_goose_updates(counts.0, &mut duck_inst);
 
     (counts.0, duck_inst)
 }

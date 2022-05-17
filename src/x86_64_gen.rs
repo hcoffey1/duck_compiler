@@ -4,18 +4,53 @@ use std::io::prelude::*;
 
 use crate::instruction::{DuckInstruction, InstructionEnum};
 
-//Not using rsp, rdx, rax, rsi, rdi, as a variable
-static REGISTER_MAP: [&str; 11] = [
-    "rbx", "rcx", "rbp", "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15",
-];
+static ARRAY_BASE_REG: &str = "r12";
+static DUCK_COUNT_REG: &str = "r13";
+static GOOSE_INDEX_REG: &str = "r14";
+
+fn get_duck_index(register: &str, duck: usize, file: &mut File) -> std::io::Result<()> {
+    //Uses r8, r9, rbx, rax, rdx
+
+    get_goose_index("r8", file)?;
+
+    //Add duck to goose number
+    writeln!(file, "  add ${}, %r8", duck)?;
+
+    //Mod by duck count + 1
+    writeln!(file, "  mov %r8, %rax")?;
+    writeln!(file, "  mov $0, %rdx")?;
+
+    writeln!(file, "  mov %r13, %rbx")?;
+    writeln!(file, "  add $1, %rbx")?;
+
+    writeln!(file, "  divq %rbx")?;
+
+    //Move into desired register
+    writeln!(file, "  mov %rdx, %{}", register)?;
+
+    Ok(())
+}
+
+fn get_goose_index(register: &str, file: &mut File) -> std::io::Result<()> {
+    //Move duck number into r8
+    writeln!(file, "  mov %{}, %{}", GOOSE_INDEX_REG, register)?;
+
+    Ok(())
+}
 
 fn write_header(duck_count: usize, file: &mut File) -> std::io::Result<()> {
     write!(file, ".section .text\n.global main\nmain:\n")?;
 
-    //Add registers for goose and teacher
-    for i in 0..duck_count + 2 {
-        write!(file, " xor %{}, %{}\n", REGISTER_MAP[i], REGISTER_MAP[i])?;
+    //Add registers for goose and teacher and goose pointer
+    writeln!(file, "#Allocate ducks on stack")?;
+    for _ in 0..duck_count + 3 {
+        //write!(file, " xor %{}, %{}\n", REGISTER_MAP[i], REGISTER_MAP[i])?;
+        writeln!(file, "  push $0")?;
     }
+
+    writeln!(file, "  mov %rsp, %{}", ARRAY_BASE_REG)?; //Address stored in r12
+    writeln!(file, "  mov ${}, %{}", duck_count, DUCK_COUNT_REG)?; //duck count stored in r12
+    writeln!(file, "  mov $0, %{}", GOOSE_INDEX_REG)?; //duck count stored in r12
 
     Ok(())
 }
@@ -31,22 +66,24 @@ fn write_add(inst: &DuckInstruction, file: &mut File) -> std::io::Result<()> {
     writeln!(file, "#n: {}", inst.n)?;
     writeln!(file, "#y: {}", inst.y)?;
     writeln!(file, "#goose: {}", inst.goose)?;
-    //Save N
-    writeln!(file, "  push %{}", REGISTER_MAP[inst.n])?;
-    //N = N + Y
-    writeln!(
-        file,
-        "  add %{}, %{}",
-        REGISTER_MAP[inst.y], REGISTER_MAP[inst.n]
-    )?;
+
+    //Get n and y index
+    get_duck_index("r10", inst.n, file)?;
+    get_duck_index("r11", inst.y, file)?;
+
+    //Load n and y
+    writeln!(file, "  movq (%r12, %r10, 8),%r8")?;
+    writeln!(file, "  movq (%r12, %r11, 8),%r9")?;
+
+    //Add n and y
+    writeln!(file, "  add %r8, %r9")?;
+
     //Move N -> Goose
-    writeln!(
-        file,
-        "  mov %{}, %{}",
-        REGISTER_MAP[inst.n], REGISTER_MAP[inst.goose]
-    )?;
-    //Restore N
-    writeln!(file, "  pop %{}", REGISTER_MAP[inst.n])?;
+    get_goose_index("rax", file)?;
+    writeln!(file, "  movq %r9, (%r12, %rax, 8)")?;
+
+    //Update goose index
+    writeln!(file, "  mov %r10, %{}", GOOSE_INDEX_REG)?;
 
     Ok(())
 }
@@ -55,22 +92,25 @@ fn write_subtract(inst: &DuckInstruction, file: &mut File) -> std::io::Result<()
     writeln!(file, "#n: {}", inst.n)?;
     writeln!(file, "#y: {}", inst.y)?;
     writeln!(file, "#goose: {}", inst.goose)?;
-    //Save N
-    writeln!(file, "  push %{}", REGISTER_MAP[inst.n])?;
-    //N = N - Y
-    writeln!(
-        file,
-        "  sub %{}, %{}",
-        REGISTER_MAP[inst.y], REGISTER_MAP[inst.n]
-    )?;
+
+    //Get n and y index
+    get_duck_index("r10", inst.n, file)?;
+    get_duck_index("r11", inst.y, file)?;
+
+    //Load n and y
+    writeln!(file, "  movq (%r12, %r10, 8),%r8")?;
+    writeln!(file, "  movq (%r12, %r11, 8),%r9")?;
+
+    //Add n and y
+    writeln!(file, "  sub %r9, %r8")?;
+
     //Move N -> Goose
-    writeln!(
-        file,
-        "  mov %{}, %{}",
-        REGISTER_MAP[inst.n], REGISTER_MAP[inst.goose]
-    )?;
-    //Restore N
-    writeln!(file, "  pop %{}", REGISTER_MAP[inst.n])?;
+    get_goose_index("rax", file)?;
+    writeln!(file, "  movq %r8, (%r12, %rax, 8)")?;
+
+    //Update goose index
+    writeln!(file, "  mov %r10, %{}", GOOSE_INDEX_REG)?;
+
     Ok(())
 }
 
@@ -79,22 +119,25 @@ fn write_multiply(inst: &DuckInstruction, file: &mut File) -> std::io::Result<()
     writeln!(file, "#n: {}", inst.n)?;
     writeln!(file, "#y: {}", inst.y)?;
     writeln!(file, "#goose: {}", inst.goose)?;
-    //Save N
-    writeln!(file, "  push %{}", REGISTER_MAP[inst.n])?;
-    //N = N * Y
-    writeln!(
-        file,
-        "  imul %{}, %{}",
-        REGISTER_MAP[inst.y], REGISTER_MAP[inst.n]
-    )?;
+
+    //Get n and y index
+    get_duck_index("r10", inst.n, file)?;
+    get_duck_index("r11", inst.y, file)?;
+
+    //Load n and y
+    writeln!(file, "  movq (%r12, %r10, 8),%r8")?;
+    writeln!(file, "  movq (%r12, %r11, 8),%r9")?;
+
+    //Add n and y
+    writeln!(file, "  imul %r8, %r9")?;
+
     //Move N -> Goose
-    writeln!(
-        file,
-        "  mov %{}, %{}",
-        REGISTER_MAP[inst.n], REGISTER_MAP[inst.goose]
-    )?;
-    //Restore N
-    writeln!(file, "  pop %{}", REGISTER_MAP[inst.n])?;
+    get_goose_index("rax", file)?;
+    writeln!(file, "  movq %r9, (%r12, %rax, 8)")?;
+
+    //Update goose index
+    writeln!(file, "  mov %r10, %{}", GOOSE_INDEX_REG)?;
+
     Ok(())
 }
 fn write_divide(inst: &DuckInstruction, file: &mut File) -> std::io::Result<()> {
@@ -103,18 +146,25 @@ fn write_divide(inst: &DuckInstruction, file: &mut File) -> std::io::Result<()> 
     writeln!(file, "#y: {}", inst.y)?;
     writeln!(file, "#goose: {}", inst.goose)?;
 
-    writeln!(file, "  push %rdx")?;
-    writeln!(file, "  push %rax")?;
+    //Get n and y index
+    get_duck_index("r10", inst.n, file)?;
+    get_duck_index("r11", inst.y, file)?;
+
+    //Load n and y
+    writeln!(file, "  movq (%r12, %r10, 8),%r8")?;
+    writeln!(file, "  movq (%r12, %r11, 8),%r9")?;
 
     writeln!(file, "  mov $0, %rdx")?;
-    writeln!(file, "  mov %{}, %rax", REGISTER_MAP[inst.n])?;
+    writeln!(file, "  mov %r8, %rax")?;
 
-    writeln!(file, "  divq %{}", REGISTER_MAP[inst.y])?;
+    writeln!(file, "  divq %r9")?;
 
-    writeln!(file, "  mov %rax, %{}", REGISTER_MAP[inst.goose])?;
+    //Move N -> Goose
+    get_goose_index("rbx", file)?;
+    writeln!(file, "  movq %rax, (%r12, %rbx, 8)")?;
 
-    writeln!(file, "  pop %rax")?;
-    writeln!(file, "  pop %rdx")?;
+    //Update goose index
+    writeln!(file, "  mov %r10, %{}", GOOSE_INDEX_REG)?;
 
     Ok(())
 }
@@ -133,7 +183,15 @@ fn write_input(inst: &DuckInstruction, file: &mut File) -> std::io::Result<()> {
     writeln!(file, "  mov $1, %edx")?;
 
     writeln!(file, "  syscall")?;
-    writeln!(file, "  pop %{}", REGISTER_MAP[inst.goose])?;
+
+    get_duck_index("r10", inst.n, file)?;
+    get_goose_index("rax", file)?;
+
+    writeln!(file, "  pop %r11")?;
+
+    writeln!(file, "  movq %r11, (%r12, %rax, 8)")?;
+
+    writeln!(file, "  mov %r10, %{}", GOOSE_INDEX_REG)?;
 
     Ok(())
 }
@@ -150,7 +208,10 @@ fn write_pop(_inst: &DuckInstruction, _file: &mut File) -> std::io::Result<()> {
 fn write_loop_begin(inst: &DuckInstruction, file: &mut File) -> std::io::Result<()> {
     writeln!(file, "#LoopBegin==========")?;
     writeln!(file, "  start_{}:", inst.y)?;
-    writeln!(file, "  cmp $0, %{}", REGISTER_MAP[inst.n])?;
+
+    get_duck_index("r10", inst.n, file)?;
+    writeln!(file, "  movq (%r12, %r10, 8),%r8")?;
+    writeln!(file, "  cmp $0, %r8")?;
     writeln!(file, "  jz end_{}", inst.y)?;
     Ok(())
 }
@@ -166,21 +227,23 @@ fn write_set(inst: &DuckInstruction, file: &mut File) -> std::io::Result<()> {
     writeln!(file, "#y: {}", inst.y)?;
     writeln!(file, "#goose: {}", inst.goose)?;
 
-    writeln!(file, "  mov ${}, %{}", inst.y, REGISTER_MAP[inst.goose])?;
+    get_duck_index("r10", inst.n, file)?;
+    get_goose_index("rax", file)?;
+
+    writeln!(file, "  movq ${}, (%r12, %rax, 8)", inst.y)?;
+
+    writeln!(file, "  mov %r10, %{}", GOOSE_INDEX_REG)?;
     Ok(())
 }
 
 fn write_print(inst: &DuckInstruction, file: &mut File) -> std::io::Result<()> {
     writeln!(file, "#Print==========")?;
-    writeln!(file, "  push %rcx")?;
-    writeln!(file, "  push %rdx")?;
-    writeln!(file, "  push %rsp")?;
-    writeln!(file, "  push %r8")?;
-    writeln!(file, "  push %r9")?;
-    writeln!(file, "  push %r10")?;
-    writeln!(file, "  push %r11")?;
 
-    writeln!(file, "  push %{}", REGISTER_MAP[inst.n])?;
+    get_duck_index("r10", inst.n, file)?;
+    writeln!(file, "  movq (%r12, %r10, 8),%r8")?;
+
+    writeln!(file, "  push %r8")?;
+
     //sys_write call number
     writeln!(file, "  mov $1, %rax")?;
     //write to stdout (fd=1)
@@ -192,13 +255,6 @@ fn write_print(inst: &DuckInstruction, file: &mut File) -> std::io::Result<()> {
     writeln!(file, "  syscall")?;
     writeln!(file, "  add $8, %rsp")?;
 
-    writeln!(file, "  pop %r11")?;
-    writeln!(file, "  pop %r10")?;
-    writeln!(file, "  pop %r9")?;
-    writeln!(file, "  pop %r8")?;
-    writeln!(file, "  pop %rsp")?;
-    writeln!(file, "  pop %rdx")?;
-    writeln!(file, "  pop %rcx")?;
     Ok(())
 }
 
