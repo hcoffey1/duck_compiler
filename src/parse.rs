@@ -23,6 +23,22 @@ pub fn get_op_name(op_code: usize) -> String {
     }
 }
 
+#[cfg(DEBUG)]
+fn print_parse(parse_results: &(usize, Vec<DuckInstruction>)) {
+    println!("There are {} duck(s).", parse_results.0);
+
+    for inst in &parse_results.1 {
+        let inst_name = get_op_name(inst.op_code);
+        let goose = inst.goose;
+        match inst.arg_c {
+            0 => println!("g: {} -> {}:", goose, inst_name),
+            1 => println!("g: {} -> {}: {}", goose, inst_name, inst.n),
+            2 => println!("g: {} -> {}: {},{}", goose, inst_name, inst.n, inst.y),
+            _ => panic!("Invalid argument size!"),
+        }
+    }
+}
+
 fn get_counts(line: &str) -> (usize, usize) {
     let c_pos = line.find('#');
 
@@ -282,5 +298,10 @@ pub fn parse_file(reader: &mut BufReader<File>) -> (usize, Vec<DuckInstruction>)
         panic!("Program does not end with goose!");
     }
 
-    (counts.0, duck_inst)
+    let parse_results = (counts.0, duck_inst);
+
+    #[cfg(DEBUG)]
+    print_parse(&parse_results);
+
+    parse_results
 }

@@ -35,20 +35,10 @@ fn main() -> Result<(), Error> {
     };
     let mut reader = BufReader::new(file);
 
+    //Parse input file and create IR
     let parse_results = parse::parse_file(&mut reader);
 
-    println!("There are {} duck(s).", parse_results.0);
-    for inst in &parse_results.1 {
-        let inst_name = parse::get_op_name(inst.op_code);
-        let goose = inst.goose;
-        match inst.arg_c {
-            0 => println!("g: {} -> {}:", goose, inst_name),
-            1 => println!("g: {} -> {}: {}", goose, inst_name, inst.n),
-            2 => println!("g: {} -> {}: {},{}", goose, inst_name, inst.n, inst.y),
-            _ => panic!("Invalid argument size!"),
-        }
-    }
-
+    //Transform IR to x86_64
     let file_name_asm = format!("{}.s", file_name_base);
     x86_64_gen::lower_program(&parse_results, &file_name_asm)?;
 
