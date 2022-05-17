@@ -5,6 +5,7 @@
 A compiler for the esoteric programming language 
 [Duck Duck Goose](https://esolangs.org/wiki/Duck_Duck_Goose)
 written in Rust. Currently only supports Linux x86-64.
+Uses `gcc` to assemble the generated x86-64 code. 
 
 ## Usage
 
@@ -48,6 +49,6 @@ but doing so does bring about overhead by
 needing to calculate duck indexes for each
 operation to load from. Additionally,
 most of the written logic for this approach
-is architecture specific (x86_64) which limits
+is architecture specific (x86-64) which limits
 portability (if for some reason DDG is highly desired on
 other architectures).
