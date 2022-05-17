@@ -1,6 +1,6 @@
 # Duck Compiler
 
-## Description
+## Overview 
 
 A compiler for the esoteric programming language 
 [Duck Duck Goose](https://esolangs.org/wiki/Duck_Duck_Goose)
@@ -21,3 +21,33 @@ This will produce `./target/release/gdd`.
 This will produce a `helloworld` binary in the current directory.
 
 `./helloworld`
+
+## Write Up (Thoughts)
+
+This project was mostly an excuse to practice writing Rust. 
+The actual Duck Duck Goose (DDG) language is fairly easy
+to parse. Determining operations and operands simply
+involves counting ducks. However, the rotational
+aspect of the language makes things slightly more
+complicated. 
+
+My first approach to this was
+to statically calculate the rotated duck positions
+based on the adjustments made to the goose
+over the program's instructions
+(`parse::_apply_goose_update()`) and dedicate
+registers to hold specific duck values. While this would
+work for a program with no control flow like `helloworld.ddg`,
+it would quickly derail in the presence of loops. Additionally,
+by dedicating registers, the number of ducks a program
+could utilize was limited by register count.
+
+Adding a layer of indirection and allocating the ducks
+on the stack resolved the issues with the first approach,
+but doing so does bring about overhead by 
+needing to calculate duck indexes for each
+operation to load from. Additionally,
+most of the written logic for this approach
+is architecture specific (x86_64) which limits
+portability (if for some reason DDG is highly desired on
+other architectures).
