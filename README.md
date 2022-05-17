@@ -53,5 +53,4 @@ needing to calculate duck indexes for each
 operation to load from. Additionally,
 most of the written logic for this approach
 is architecture specific (x86-64) which limits
-portability (if for some reason DDG is highly desired on
-other architectures).
+portability. 
